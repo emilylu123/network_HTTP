@@ -6,6 +6,7 @@ import sys
 import os
 import argparse
 import re
+import random
 
 # 1MB buffer size
 BUFFER_SIZE = 1000000
@@ -22,6 +23,7 @@ args = parser.parse_args()
 # ~~~~ INSERT CODE ~~~~
 HOST = args.hostname
 PORT = int(args.port)
+# PORT = random.randint(0,8888)
 print 'hostname:', HOST, ' port:', PORT
 # ~~~~ END CODE Is.NSERT ~~~~
 
@@ -43,7 +45,6 @@ try:
     print 'Port is bound'
 except Exception as e:
     print 'Port is in use', str(e)
-    serverSocket.close()
     sys.exit()
 
 try:
@@ -143,7 +144,7 @@ while True:
             # What would be the appropriate status code and message to send to client?
             # store the value in clientResponse
             # ~~~~ INSERT CODE ~~~~
-            clientResponse='200'
+            clientResponse= '200'
             # ~~~~ END CODE INSERT ~~~~
 
             print 'Sending to the client:'
@@ -210,14 +211,13 @@ while True:
 
                 # Send the response to the client
                 # ~~~~ todo: INSERT CODE ~~~~
-                print '>>> Send the response to the client', len(response)
                 # originServerSocket.send(response, (HOST, PORT))
-                originServerSocket.send(response)
+                originServerSocket.sendto(bytes(response), (HOST, PORT))
                 # ~~~~ END CODE INSERT ~~~~
 
                 # finished sending to origin server - shutdown socket writes
                 originServerSocket.shutdown(socket.SHUT_WR)
-
+                print 'Request sent to origin server\n'
                 print 'Request sent to origin server\n'
 
                 # Create a new file in the cache for the requested file.

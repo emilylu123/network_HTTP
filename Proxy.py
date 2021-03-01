@@ -22,7 +22,7 @@ args = parser.parse_args()
 # You can use int(string) to convert a string to an integer
 # ~~~~ INSERT CODE ~~~~
 HOST = args.hostname
-PORT = int(args.port)+2
+PORT = int(args.port)
 print 'hostname:', HOST, ' port:', PORT
 # ~~~~ END CODE Is.NSERT ~~~~
 
@@ -129,8 +129,7 @@ while True:
         outputStr =''
         out = outputStr.join(outputdata)
         print 'Out: ', out
-        serverSocket.sendall(out)
-        print '>>> done sending output: ',len(out)
+        serverSocket.sendall(bytes(out))
 
         # ~~~~ END CODE INSERT ~~~~
         cacheFile.close()

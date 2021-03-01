@@ -129,7 +129,7 @@ while True:
         outputStr =''
         out = outputStr.join(outputdata)
         print 'Out: ', out
-        serverSocket.sendall(bytes(out))
+        serverSocket.sendall(out)
 
         # ~~~~ END CODE INSERT ~~~~
         cacheFile.close()
@@ -209,7 +209,7 @@ while True:
 
                 # Send the response to the client
                 # ~~~~ todo: INSERT CODE ~~~~
-                originServerSocket.sendall(bytes(response))
+                originServerSocket.sendall(response)
                 # originServerSocket.sendto(bytes(response), (HOST, PORT))
                 # ~~~~ END CODE INSERT ~~~~
 

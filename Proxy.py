@@ -1,3 +1,5 @@
+# Test -> http://localhost:8888/http://autoidlab.cs.adelaide.edu.au
+
 # Include the libraries for socket and system calls
 import socket
 import sys
@@ -19,65 +21,64 @@ args = parser.parse_args()
 # You can use int(string) to convert a string to an integer
 # ~~~~ INSERT CODE ~~~~
 HOST = args.hostname
-HOST = ''
 PORT = int(args.port)
-print('hostname:', HOST, ' port:', PORT)
-# ~~~~ END CODE INSERT ~~~~
+print 'hostname:', HOST, ' port:', PORT
+# ~~~~ END CODE Is.NSERT ~~~~
 
 try:
     # Create a server socket
     # ~~~~ INSERT CODE ~~~~
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    # sock.close()
+    serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     # ~~~~ END CODE INSERT ~~~~
-    print('Connected socket')
+    print 'Connected socket'
 except:
-    print('Failed to create socket')
+    print 'Failed to create socket'
     sys.exit()
 
 try:
     # Bind the the server socket to a host and port
     # ~~~~ INSERT CODE ~~~~
-    s.bind((HOST, PORT))
+    serverSocket.bind((HOST, PORT))
     # ~~~~ END CODE INSERT ~~~~
-    print('Port is bound')
+    print 'Port is bound'
 except Exception as e:
-    print('Port is in use', str(e))
+    print 'Port is in use', str(e)
+    serverSocket.close()
     sys.exit()
 
 try:
     # Listen on the server socket
     # ~~~~ INSERT CODE ~~~~
-    s.listen(100)
+    serverSocket.listen(5)
     # ~~~~ END CODE INSERT ~~~~
-    print('Listening to socket')
+    print 'Listening to socket'
 except:
-    print('Failed to listen')
+    print 'Failed to listen'
     sys.exit()
 
 while True:
-    print('Waiting connection...')
+    print 'Waiting connection...'
 
     clientSocket = None
     try:
         # Accept connection from client and store in the clientSocket
-        # ~~~~ todo: INSERT CODE ~~~~
-        conn, addr = s.accept()
+        # ~~~~ INSERT CODE ~~~~
+        (clientSocket, address) = serverSocket.accept()
         # ~~~~ END CODE INSERT ~~~~
-        print('Received a connection from:', args.hostname)
-    except :
-        print('Failed to accept connection')
+        print 'Received a connection from:', args.hostname
+    except:
+        print 'Failed to accept connection'
         sys.exit()
 
     message = 'METHOD URI VERSION'
     # Get request from client
     # and store it in message
-    # ~~~~ todo: INSERT CODE ~~~~
-
+    # ~~~~ INSERT CODE ~~~~
+    message = str(clientSocket.recv(BUFFER_SIZE))
     # ~~~~ END CODE INSERT ~~~~
 
-    print('Received request:')
-    print('< ' + message)
+    print 'Received request:'
+    print '< ' + message
 
     # Extract the parts of the HTTP request line from the given message
     requestParts = message.split()
@@ -85,10 +86,10 @@ while True:
     URI = requestParts[1]
     version = requestParts[2]
 
-    print('Method:\t\t' + method)
-    print('URI:\t\t' + URI)
-    print('Version:\t' + version)
-    print('')
+    print 'Method:\t\t' + method
+    print 'URI:\t\t' + URI
+    print 'Version:\t' + version
+    print ''
 
     # Remove http protocol from the URI
     URI = re.sub('^(/?)http(s?)://', '', URI, 1)
@@ -105,27 +106,33 @@ while True:
         # Resource is absolute URI with hostname and resource
         resource = resource + resourceParts[1]
 
-    print('Requested Resource:\t' + resource)
+    print 'Requested Resource:\t' + resource
 
     cacheLocation = './' + hostname + resource
     if cacheLocation.endswith('/'):
         cacheLocation = cacheLocation + 'default'
 
-    print('Cache location:\t\t' + cacheLocation)
+    print 'Cache location:\t\t' + cacheLocation
 
     fileExists = os.path.isfile(cacheLocation)
 
     try:
-        # Check wether the file exist in the cache
+        # Check weather the file exist in the cache
         cacheFile = open(cacheLocation, "r")
         outputdata = cacheFile.readlines()
 
-        print('Cache hit! Loading from cache file: ' + cacheLocation)
+        print 'Cache hit! Loading from cache file: ' + cacheLocation
         # ProxyServer finds a cache hit
         # Send back contents of cached file
-        # ~~~~ todo: INSERT CODE ~~~~
-        # ~~~~ END CODE INSERT ~~~~
+        # ~~~~ INSERT CODE ~~~~
+        print 'Cache Data: ', outputdata
+        outputStr =''
+        out = outputStr.join(outputdata)
+        print 'Out: ', out
+        serverSocket.sendall(out)
+        print '>>> done sending output: ',len(out)
 
+        # ~~~~ END CODE INSERT ~~~~
         cacheFile.close()
 
     # Error handling for file not found in cache
@@ -135,31 +142,34 @@ while True:
             # If we get here, the file exists but the proxy can't open or read it
             # What would be the appropriate status code and message to send to client?
             # store the value in clientResponse
-            # ~~~~ todo: INSERT CODE ~~~~
+            # ~~~~ INSERT CODE ~~~~
+            clientResponse='200'
             # ~~~~ END CODE INSERT ~~~~
 
-            print('Sending to the client:')
-            print('> ' + clientResponse)
-            print('>')
+            print 'Sending to the client:'
+            print '> ' + clientResponse
+            print '>'
             clientSocket.sendall(clientResponse + "\r\n\r\n")
 
         else:
             originServerSocket = None
             # Create a socket to connect to origin server
             # and store in originServerSocket
-            # ~~~~ todo: INSERT CODE ~~~~
+            # ~~~~ INSERT CODE ~~~~
+            originServerSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             # ~~~~ END CODE INSERT ~~~~
 
-            print('Connecting to:\t\t' + hostname + '\n')
+            print 'Connecting to:\t\t' + hostname + '\n'
             try:
                 # Get the IP address for a hostname
                 address = socket.gethostbyname(hostname)
-
                 # Connect to the origin server
-                # ~~~~ todo: INSERT CODE ~~~~
+                # ~~~~ INSERT CODE ~~~~
+                # connect to target IP address: address
+                originServerSocket.connect((address, 80))
                 # ~~~~ END CODE INSERT ~~~~
 
-                print('Connected to origin Server')
+                print 'Connected to origin Server'
 
                 # Create a file object associated with this socket
                 # This lets us use file function calls
@@ -167,66 +177,74 @@ while True:
 
                 originServerRequest = ''
                 originServerRequestHeader = ''
+
                 # Create origin server request line and headers to send
                 # and store in originServerRequestHeader and originServerRequest
                 # originServerRequest is the first line in the request and
                 # originServerRequestHeader is the second line in the request
                 # ~~~~ INSERT CODE ~~~~
+                originServerRequest = message.splitlines()[0]
+                originServerRequestHeader = message.splitlines()[1]
                 # ~~~~ END CODE INSERT ~~~~
 
                 # Construct the request to send to the origin server
                 request = originServerRequest + '\r\n' + originServerRequestHeader + '\r\n\r\n'
 
                 # Request the web resource from origin server
-                print('Forwarding request to origin server:')
+                print 'Forwarding request to origin server:'
                 for line in request.split('\r\n'):
-                    print('> ' + line)
+                    print '> ' + line
 
                 try:
                     originServerSocket.sendall(request)
                 except socket.error:
-                    print('Send failed')
+                    print 'Send failed'
                     sys.exit()
 
                 originServerFileObj.write(request)
 
                 # Get the response from the origin server
-                # ~~~~ todo: INSERT CODE ~~~~
+                # ~~~~ INSERT CODE ~~~~
+                response = originServerSocket.recv(BUFFER_SIZE)
                 # ~~~~ END CODE INSERT ~~~~
 
                 # Send the response to the client
                 # ~~~~ todo: INSERT CODE ~~~~
+                print '>>> Send the response to the client', len(response)
+                # originServerSocket.send(response, (HOST, PORT))
+                originServerSocket.send(response)
                 # ~~~~ END CODE INSERT ~~~~
 
                 # finished sending to origin server - shutdown socket writes
                 originServerSocket.shutdown(socket.SHUT_WR)
 
-                print('Request sent to origin server\n')
+                print 'Request sent to origin server\n'
 
                 # Create a new file in the cache for the requested file.
                 # Also send the response in the buffer to client socket
                 # and the corresponding file in the cache
                 cacheDir, file = os.path.split(cacheLocation)
-                print('cached directory ' + cacheDir)
+                print 'cached directory ' + cacheDir
                 if not os.path.exists(cacheDir):
                     os.makedirs(cacheDir)
                 cacheFile = open(cacheLocation, 'wb')
 
-                # Save orogin server response in the cache file
+                # Save origin server response in the cache file
                 # ~~~~ todo: INSERT CODE ~~~~
+                print '>>> Save origin server response in the cache file'
+                cacheFile.write(response)
                 # ~~~~ END CODE INSERT ~~~~
 
-                print('done sending')
+                print 'done sending'
                 originServerSocket.close()
                 cacheFile.close()
-                print('cache file closed')
+                print 'cache file closed'
                 clientSocket.shutdown(socket.SHUT_WR)
-                print('client socket shutdown for writing')
+                print 'client socket shutdown for writing'
 
-            # except IOError, (value, message):
-            except IOError as message:
-                print('origin server request failed. ' + message)
+            except IOError, (value, message):
+                print 'origin server request failed. ' + message
     try:
         clientSocket.close()
     except:
-        print('Failed to close client socket')
+        print 'Failed to close client socket'

@@ -23,6 +23,7 @@ args = parser.parse_args()
 # ~~~~ INSERT CODE ~~~~
 HOST = args.hostname
 PORT = int(args.port)
+PORT = int(args.port) +1
 print 'hostname:', HOST, ' port:', PORT
 # ~~~~ END CODE Is.NSERT ~~~~
 
@@ -74,7 +75,7 @@ while True:
     # Get request from client
     # and store it in message
     # ~~~~ INSERT CODE ~~~~
-    message = str(clientSocket.recv(BUFFER_SIZE))
+    message = clientSocket.recv(BUFFER_SIZE)
     # ~~~~ END CODE INSERT ~~~~
 
     print 'Received request:'
@@ -126,9 +127,8 @@ while True:
         # Send back contents of cached file
         # ~~~~ INSERT CODE ~~~~
         print 'Cache Data: ', outputdata
-        outputStr =''
-        out = outputStr.join(outputdata)
-        print 'Out: ', out
+        out = ''.join(outputdata)
+        # print 'Out: ', out
         serverSocket.sendall(out)
 
         # ~~~~ END CODE INSERT ~~~~
@@ -181,9 +181,12 @@ while True:
                 # and store in originServerRequestHeader and originServerRequest
                 # originServerRequest is the first line in the request and
                 # originServerRequestHeader is the second line in the request
-                # ~~~~ INSERT CODE ~~~~
-                originServerRequest = message.splitlines()[0]
-                originServerRequestHeader = message.splitlines()[1]
+                # ~~~~ todo: INSERT CODE ~~~~
+                originServerRequest = requestParts[0] +" / " + requestParts[2]
+                originServerRequestHeader = 'HOST: ' + hostname
+                print '>>>', originServerRequest
+                print '>>>', originServerRequestHeader
+
                 # ~~~~ END CODE INSERT ~~~~
 
                 # Construct the request to send to the origin server

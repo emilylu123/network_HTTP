@@ -22,8 +22,7 @@ args = parser.parse_args()
 # You can use int(string) to convert a string to an integer
 # ~~~~ INSERT CODE ~~~~
 HOST = args.hostname
-PORT = int(args.port)
-# PORT = random.randint(0,8888)
+PORT = int(args.port)+2
 print 'hostname:', HOST, ' port:', PORT
 # ~~~~ END CODE Is.NSERT ~~~~
 
@@ -50,7 +49,7 @@ except Exception as e:
 try:
     # Listen on the server socket
     # ~~~~ INSERT CODE ~~~~
-    serverSocket.listen(5)
+    serverSocket.listen(500)
     # ~~~~ END CODE INSERT ~~~~
     print 'Listening to socket'
 except:
@@ -211,13 +210,12 @@ while True:
 
                 # Send the response to the client
                 # ~~~~ todo: INSERT CODE ~~~~
-                # originServerSocket.send(response, (HOST, PORT))
-                originServerSocket.sendto(bytes(response), (HOST, PORT))
+                originServerSocket.sendall(bytes(response))
+                # originServerSocket.sendto(bytes(response), (HOST, PORT))
                 # ~~~~ END CODE INSERT ~~~~
 
                 # finished sending to origin server - shutdown socket writes
                 originServerSocket.shutdown(socket.SHUT_WR)
-                print 'Request sent to origin server\n'
                 print 'Request sent to origin server\n'
 
                 # Create a new file in the cache for the requested file.
